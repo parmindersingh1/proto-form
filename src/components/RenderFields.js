@@ -22,8 +22,17 @@ class RenderFields extends Component {
   };
 
   fieldChange = (p, t, type, field) => {
-    console.log("valueChange", p, t, type);
+    console.log("valueChange", p, t, type, field);
+    field[0] = t;
+    const fieldType = this.state.currentNode.type.fields[field[0]];
+    field[1] = this.resolveTypeName(fieldType);
+    this.setState({
+      currentNode: {
+        ...this.state.currentNode,
+      },
+    });
   };
+  
   entryAdd = (p, type, field) => {
     let fieldName = p.split("/");
     console.log("valueChange", p, type, field);
@@ -72,7 +81,7 @@ class RenderFields extends Component {
 
   createMessageType = (messageType) => {
     const repeatedFields = [];
-    const oneOfFields = [];
+    let oneOfFields = [];
     const singleFields = [];
     const mapFields = [];
     console.log("messageType", messageType);
@@ -103,31 +112,42 @@ class RenderFields extends Component {
       }
     });
 
+    const oneOfFieldNames = [];
     if (messageType.oneofs) {
       Object.values(messageType.oneofs).forEach((one) => {
         const options = one.oneof.map((el) => {
           let elt = messageType.fields[el];
           const typeName = this.resolveTypeName(elt);
+          console.log("typeName ***", typeName)
+          oneOfFieldNames.push(elt.name)
           return [elt.name, typeName];
         });
-        oneOfFields.push([one.name, options]);
+        oneOfFields.push([one.name, options.splice(1)]);
+        // oneOfFields.splice(0, 1, [one.name, options]); // replace item
+        console.log("oneOfFields ***", oneOfFields)
       });
     }
 
-    const oneOfFieldNames = oneOfFields.reduce(
-      (acc, [, options]) => acc.concat(options.map(([name]) => name)),
-      []
-    );
+    console.log("**** 1", oneOfFields);
+
+    // const oneOfFieldNames = oneOfFields.reduce(
+    //   (acc, [, options]) => acc.concat(options.map(([name]) => name)),
+    //   []
+    // );
+
+    console.log("**** 2", oneOfFieldNames);
 
     const realSingleFields = singleFields.filter(
       ([name]) => !oneOfFieldNames.includes(name)
     );
-
+    oneOfFields = oneOfFields.filter((of, i) =>  i=== 0)
     oneOfFields.forEach((of) => {
       let temp = of[1];
-      of[1] = [].concat.apply([], temp);
+      console.log("temp", temp)
+        of[1] = [].concat.apply([], temp);
     });
-
+    // oneOfFields.splice(0, 1, [one.name, options]); // replace item
+   
     const temp = {
       type: {
         ...messageType,
@@ -546,11 +566,12 @@ class RenderFields extends Component {
     });
   };
 
-  getFieldValue = (value) => {
+  getFieldValue = (value, obj={}) => {
+    console.log("TYPE", value)
     switch (value.type.tag) {
       case "message":
-        this.getMessageValue(value, {});
-        return;
+        this.getMessageValue(value, obj);
+        return obj;
       case "primitive":
         return value.value;
       case "enum":

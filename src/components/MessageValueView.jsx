@@ -72,7 +72,7 @@ const MessageValueView = ({ editable, value, handlers }) => {
           //   ([name]) => name
           // );
           const options = Object.keys(type.fields) || [];
-          console.log("&&&&", fieldName, options);
+          console.log("&&&&", fieldName, options, selectedField);
 
           return (
             <OneOfFieldView
@@ -263,6 +263,8 @@ const OneOfFieldView = ({
   handlers,
 }) => {
   const [name, value] = selectedField;
+  if(!name || !value) return null;
+  console.log("******", name, value)
   return (
     <Block>
       <FieldName>{fieldName}</FieldName>
@@ -273,7 +275,7 @@ const OneOfFieldView = ({
           className="input-sm"
           style={{ width: KEY_INPUT_WIDTH }}
           onChange={(s) =>
-            handlers.fieldChange("", s.target.value, "OneOfField")
+            handlers.fieldChange("", s.target.value, "OneOfField", selectedField)
           }
           type="OneOfField"
         >
