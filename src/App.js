@@ -1,25 +1,41 @@
-import logo from './logo.svg';
-import './App.css';
+import "./App.css";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+import { Component } from "react";
+import FileInput from "./components/FileInput";
+import RenderFields from "./components/RenderFields";
+import Renderer from "./components/Renderer";
+
+class App extends Component {
+  state = {
+    modes: {
+      LOAD: "load",
+      RENDER: "render",
+    },
+    currentMode: "load",
+    protoPackage: "",
+    protoMessages: [],
+  };
+  
+  handleOnChange = (protoMsg) => {
+    console.log("protoMsg", protoMsg);
+    this.setState({
+      protoMessages: protoMsg.root.nested,
+      currentMode: this.state.modes.RENDER,
+    });
+  };
+
+  render() {
+    const { currentMode, modes, protoMessages } = this.state;
+    return (
+      <div className="App">
+        <FileInput handleOnChange={this.handleOnChange} />
+        {currentMode !== modes.LOAD && (
+          <RenderFields messages={protoMessages} />
+          // <Renderer messages={protoMessages} />
+        )}
+      </div>
+    );
+  }
 }
 
 export default App;
