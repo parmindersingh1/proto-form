@@ -1,8 +1,8 @@
 import React, { Component } from "react";
+import { cloneDeep, isArray } from "lodash";
 
 import MessageValueView from "./MessageValueView";
 import { allPrimitiveTypes } from "./helpers";
-import { cloneDeep } from "lodash";
 
 class RenderFields extends Component {
   state = {
@@ -21,19 +21,18 @@ class RenderFields extends Component {
     this.updateCurrentNode(fieldName, type, v, field);
   };
 
-
   fieldChange = (p, t, type, field) => {
     console.log("valueChange", p, t, type);
   };
   entryAdd = (p, type, field) => {
     let fieldName = p.split("/");
     console.log("valueChange", p, type, field);
-    this.addEntry(fieldName, type);
+    this.addEntry(fieldName, type, field);
   };
   entryRemove = (p, type, field) => {
     let fieldName = p.split("/");
-    console.log("valueChange", p, type);
-    this.removeEntry(fieldName, type);
+    console.log("valueChange", p, type, field);
+    this.removeEntry(fieldName, type, field);
   };
 
   initMessages() {
@@ -128,7 +127,7 @@ class RenderFields extends Component {
       let temp = of[1];
       of[1] = [].concat.apply([], temp);
     });
- 
+
     const temp = {
       type: {
         ...messageType,
@@ -177,107 +176,129 @@ class RenderFields extends Component {
     }
   };
 
-  addEntry = (fieldName, type) => {
-    console.log(fieldName, type);
+  addEntry = (fieldName, type, field) => {
+    console.log(fieldName, type, field);
     switch (type) {
       case "RepeatedField":
-        this.addRepeatedField(fieldName);
+        this.addRepeatedField(fieldName, field);
         break;
       case "MapField":
-        this.addMapField(fieldName);
+        this.addMapField(fieldName, field);
         break;
     }
   };
 
-  removeEntry = (fieldName, type) => {
+  removeEntry = (fieldName, type, currentField) => {
     console.log(fieldName, type);
-    switch (type) {
-      case "RepeatedField":
-        this.removeRepeatedField(fieldName);
-        break;
-      case "MapField":
-        this.removeMapField(fieldName);
-        break;
-    }
-  };
-
-  addRepeatedField = (fieldName) => {
-    console.log("RepeatedField", this.state.currentNode.repeatedFields);
-    let repeatedFields = cloneDeep(this.state.currentNode.repeatedFields);
-
-    const repeatedFieldsUpdated = repeatedFields.map((currentField) => {
-      if (currentField[0] === fieldName[0]) {
-        const field = this.state.currentNode.type.fields[fieldName[0]];
-        currentField[1].push(this.resolveTypeName(field));
-      }
-      return currentField;
-    });
-
+    // switch (type) {
+    //   case "RepeatedField":
+    //     this.removeRepeatedField(fieldName);
+    //     break;
+    //   case "MapField":
+    //     this.removeMapField(fieldName);
+    //     break;
+    // }
+    // ***** currentField = {values, idx} ****
+    currentField.values.splice(currentField.idx, 1);
     this.setState({
       currentNode: {
         ...this.state.currentNode,
-        repeatedFields: repeatedFieldsUpdated,
       },
     });
   };
 
-  removeRepeatedField = (fieldName) => {
-    console.log("RepeatedField", this.state.currentNode.repeatedFields);
-    let repeatedFields = cloneDeep(this.state.currentNode.repeatedFields);
+  addRepeatedField = (fieldName, currentField) => {
+    // console.log("RepeatedField", this.state.currentNode.repeatedFields);
+    // let repeatedFields = cloneDeep(this.state.currentNode.repeatedFields);
 
-    const repeatedFieldsUpdated = repeatedFields.map((currentField) => {
-      if (currentField[0] === fieldName[0]) {
-        currentField[1].splice(+fieldName[1], 1);
-      }
-      return currentField;
-    });
+    // const repeatedFieldsUpdated = repeatedFields.map((currentField) => {
+    //   if (currentField[0] === fieldName[0]) {
+    //     const field = this.state.currentNode.type.fields[fieldName[0]];
+    //     currentField[1].push(this.resolveTypeName(field));
+    //   }
+    //   return currentField;
+    // });
 
+    // this.setState({
+    //   currentNode: {
+    //     ...this.state.currentNode,
+    //     repeatedFields: repeatedFieldsUpdated,
+    //   },
+    // });
+
+    const field = this.state.currentNode.type.fields[currentField[0]];
+    currentField[1].push(this.resolveTypeName(field));
     this.setState({
       currentNode: {
         ...this.state.currentNode,
-        repeatedFields: repeatedFieldsUpdated,
       },
     });
   };
 
-  addMapField = (fieldName) => {
-    console.log("MapField", this.state.currentNode.mapFields);
-    let mapFields = cloneDeep(this.state.currentNode.mapFields);
-    // let currentField = mapFields.find((sf) => sf[0] === fieldName[0]);
-    const mapFieldsUpdated = mapFields.map((currentField) => {
-      if (currentField[0] === fieldName[0]) {
-        const field = this.state.currentNode.type.fields[fieldName[0]];
-        currentField[1].push(["", this.resolveTypeName(field)]); // keytype always string
-      }
-      return currentField;
-    });
+  // removeRepeatedField = (fieldName) => {
+  //   console.log("RepeatedField", this.state.currentNode.repeatedFields);
+  //   let repeatedFields = cloneDeep(this.state.currentNode.repeatedFields);
 
+  //   const repeatedFieldsUpdated = repeatedFields.map((currentField) => {
+  //     if (currentField[0] === fieldName[0]) {
+  //       currentField[1].splice(+fieldName[1], 1);
+  //     }
+  //     return currentField;
+  //   });
+
+  //   this.setState({
+  //     currentNode: {
+  //       ...this.state.currentNode,
+  //       repeatedFields: repeatedFieldsUpdated,
+  //     },
+  //   });
+  // };
+
+  addMapField = (fieldName, currentField) => {
+    // console.log("MapField", this.state.currentNode.mapFields);
+    // let mapFields = cloneDeep(this.state.currentNode.mapFields);
+    // // let currentField = mapFields.find((sf) => sf[0] === fieldName[0]);
+    // const mapFieldsUpdated = mapFields.map((currentField) => {
+    //   if (currentField[0] === fieldName[0]) {
+    //     const field = this.state.currentNode.type.fields[fieldName[0]];
+    //     currentField[1].push(["", this.resolveTypeName(field)]); // keytype always string
+    //   }
+    //   return currentField;
+    // });
+    // this.setState({
+    //   currentNode: {
+    //     ...this.state.currentNode,
+    //     mapFields: mapFieldsUpdated,
+    //   },
+    // });
+
+    const field = this.state.currentNode.type.fields[currentField[0]];
+    currentField[1].push(["", this.resolveTypeName(field)]); // keytype always string
     this.setState({
       currentNode: {
         ...this.state.currentNode,
-        mapFields: mapFieldsUpdated,
       },
     });
   };
 
-  removeMapField = (fieldName) => {
-    console.log("MapField", this.state.currentNode.mapFields);
-    let mapFields = cloneDeep(this.state.currentNode.mapFields);
-    // let currentField = mapFields.find((sf) => sf[0] === fieldName[0]);
-    const mapFieldsUpdated = mapFields.map((currentField) => {
-      if (currentField[0] === fieldName[0]) {
-        currentField[1].splice(+fieldName[1], 1);
-      }
-      return currentField;
-    });
+  // removeMapField = (fieldName) => {
+  //   console.log("MapField", this.state.currentNode.mapFields);
+  //   let mapFields = cloneDeep(this.state.currentNode.mapFields);
+  //   // let currentField = mapFields.find((sf) => sf[0] === fieldName[0]);
+  //   const mapFieldsUpdated = mapFields.map((currentField) => {
+  //     if (currentField[0] === fieldName[0]) {
+  //       currentField[1].splice(+fieldName[1], 1);
+  //     }
+  //     return currentField;
+  //   });
 
-    this.setState({
-      currentNode: {
-        ...this.state.currentNode,
-        mapFields: mapFieldsUpdated,
-      },
-    });
-  };
+  //   this.setState({
+  //     currentNode: {
+  //       ...this.state.currentNode,
+  //       mapFields: mapFieldsUpdated,
+  //     },
+  //   });
+  // };
 
   updateSingleField(fieldName, value, currentField) {
     // console.log("singleFields", this.state.currentNode.singleFields);
@@ -347,22 +368,36 @@ class RenderFields extends Component {
     // console.log("currentField", currentField, oneOfFields, fieldName);
   }
 
-  updateMapField(fieldName, value) {
-    console.log("MapField", this.state.currentNode.mapFields);
-    let mapFields = cloneDeep(this.state.currentNode.mapFields);
-    let currentField = mapFields.find((sf) => sf[0] === fieldName[0]);
-    let type = currentField[1][+fieldName[1]];
-    console.log("TYPE", type);
-    if (+fieldName[2] === 0) {
-      type[0] = value;
+  updateMapField(fieldName, value, currentField) {
+    // console.log("MapField", this.state.currentNode.mapFields);
+    // let mapFields = cloneDeep(this.state.currentNode.mapFields);
+    // let currentField = mapFields.find((sf) => sf[0] === fieldName[0]);
+    // let type = currentField[1][+fieldName[1]];
+    // console.log("TYPE", type);
+    // if (+fieldName[2] === 0) {
+    //   type[0] = value;
+    // } else {
+    //   type[1].value = value;
+    //   if (type[1].type.tag === "enum") {
+    //     type[1].selected = value;
+    //   }
+    // }
+    // this.setState({
+    //   currentNode: { ...this.state.currentNode, mapFields: mapFields },
+    // });
+
+    if (isArray(currentField)) {
+      // means key change
+      currentField[0] = value;
     } else {
-      type[1].value = value;
-      if (type[1].type.tag === "enum") {
-        type[1].selected = value;
+      // means value change
+      currentField.value = value;
+      if (currentField.type.tag === "enum") {
+        currentField.selected = value;
       }
     }
     this.setState({
-      currentNode: { ...this.state.currentNode, mapFields: mapFields },
+      currentNode: { ...this.state.currentNode },
     });
   }
 
@@ -420,7 +455,7 @@ class RenderFields extends Component {
           tag: "primitive",
           name: resolvedField.type.value,
           defaultValue: "",
-          field: resolvedField
+          field: resolvedField,
         },
         value: "",
       };
@@ -454,7 +489,7 @@ class RenderFields extends Component {
       //   mapFields: message.mapFields || [],
       // },
 
-      currentNode: message
+      currentNode: message,
     });
   };
 

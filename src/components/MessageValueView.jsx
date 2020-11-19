@@ -63,6 +63,7 @@ const MessageValueView = ({ editable, value, handlers }) => {
               fieldName={fieldName}
               values={values}
               handlers={prefix(fieldName, handlers)}
+              field={field}
             />
           );
         })}
@@ -93,6 +94,7 @@ const MessageValueView = ({ editable, value, handlers }) => {
               fieldName={fieldName}
               kvPairs={entries}
               handlers={prefix(fieldName, handlers)}
+              field={field}
             />
           );
         })}
@@ -210,7 +212,7 @@ const SingleFieldView = ({ editable, fieldName, value, handlers, type }) => {
   );
 };
 
-const RepeatedFieldView = ({ editable, fieldName, values, handlers }) => {
+const RepeatedFieldView = ({ editable, fieldName, values, handlers, field }) => {
   console.log("repeated", values);
   return (
     <Block>
@@ -230,7 +232,7 @@ const RepeatedFieldView = ({ editable, fieldName, values, handlers }) => {
               className="btn btn-sm btn-danger"
               style={{ marginLeft: 4 }}
               onClick={() =>
-                handlers.entryRemove(`${idx.toString()}/`, "RepeatedField")
+                handlers.entryRemove(`${idx.toString()}/`, "RepeatedField", {values, idx})
               }
             >
               <i className="fa fa-remove"></i> -
@@ -243,7 +245,7 @@ const RepeatedFieldView = ({ editable, fieldName, values, handlers }) => {
           <button
             shape="circle"
             className="btn btn-primary btn-sm"
-            onClick={() => handlers.entryAdd("", "RepeatedField")}
+            onClick={() => handlers.entryAdd("", "RepeatedField", field)}
           >
             <i className="fa fa-plus"></i> +
           </button>
@@ -295,7 +297,7 @@ const OneOfFieldView = ({
   );
 };
 
-const MapFieldView = ({ editable, fieldName, kvPairs, handlers }) => {
+const MapFieldView = ({ editable, fieldName, kvPairs, handlers, field }) => {
   console.log("kvpairs", kvPairs);
   return (
     <Block>
@@ -329,7 +331,7 @@ const MapFieldView = ({ editable, fieldName, kvPairs, handlers }) => {
               className="btn btn-sm btn-danger"
               style={{ marginLeft: 4 }}
               onClick={() =>
-                handlers.entryRemove(`${idx.toString()}/`, "MapField")
+                handlers.entryRemove(`${idx.toString()}/`, "MapField", {values: kvPairs , idx})
               }
             >
               <i className="fa fa-remove"></i> -
@@ -342,7 +344,7 @@ const MapFieldView = ({ editable, fieldName, kvPairs, handlers }) => {
           <button
             shape="circle"
             className="btn btn-primary btn-sm"
-            onClick={() => handlers.entryAdd("", "MapField")}
+            onClick={() => handlers.entryAdd("", "MapField", field)}
           >
             <i className="fa fa-plus"></i> +
           </button>
